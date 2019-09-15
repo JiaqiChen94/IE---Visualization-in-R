@@ -1,0 +1,72 @@
+library("readxl")
+library("highcharter")
+library("ggplot2")
+
+library("tidyverse") #data Manipulation
+
+data <- read_excel("Bulk Bill Season.xlsx")
+data
+highchart() %>%
+    hc_chart(type = "column",
+            options3d = list(enabled = TRUE, beta = 15, alpha = 15)) %>%
+    hc_xAxis(type = "category",categories = data$Type) %>%
+    hc_add_series(data = data$Season, 
+                  dataLabels = list(enabled = TRUE,
+                    formatter = JS("function(){ return Highcharts.numberFormat(this.y);}"),
+                                    style=list(
+                                    color = "#FFFFFF",
+                                        fontWeight='bold',
+                                        textShadow="0px 0px 3px black"
+                                    ),
+                                    crop = FALSE,
+                                    overflow='none'
+                                   ),
+                  name = 'Season'
+                 )
+
+
+# Broad Type of Service: Assistance at Operations in VIC.csv
+df <- read.csv("Broad Type of Service_Assistance at Operations in VIC.csv")
+head(df)
+
+plot(x = df$Year, y = df$Bulk_Billing_Rate.In_and_Out_of_Hospital.,
+    pch = 16, frame = FALSE,
+    xlab = "Year", ylab = "Bulk Billing Rate of Assistance at Operations", col = "#2E9FDF")
+    
+    
+df %>%
+    hchart("areaspline", hcaes(x = "Year", y = "Bulk_Billing_Rate.Out_of_Hospital."))
+    
+df
+ggplot(df, aes(x = Year, y = Bulk_Billing_Rate.Out_of_Hospital., group = 1)) + 
+    geom_line(linetype = "dashed", color = "black") + 
+    geom_point(color = "blue")
+    
+q <- ggplot(data = df, aes(x = factor(Year), y = Bulk_Billing_Rate.Out_of_Hospital.)) + 
+    geom_line(color = "blue") + 
+    geom_point(color = "red")
+
+q + theme(axis.text.x = element_text(angle = 90, hjust = 0.5))
+
+# vic_median.csv
+vic_median <- read.csv("vic_median.csv")
+vic_median
+compare_median <- vic_median[vic_median[,"Median"] <= 20 | vic_median[,"Type"] == "Total Medicare",]
+compare_median
+
+p <- ggplot(compare_median, aes(x = Type, y = Median)) + 
+    geom_bar(stat = "identity", fill = "#FF6666") + theme_light() + 
+    geom_text(aes(label = Median), vjust=1.6, color="black",
+             position = position_dodge(0.9), size = 3.5)
+p <- p +  coord_polar() + aes(x=reorder(Type, Median)) +
+    theme(axis.text.x = element_text(angle=-20))
+p
+
+p <- ggplot(compare_median, aes(x = Type, y = Median)) + 
+    geom_bar(stat = "identity", color = "black") + 
+    geom_text(aes(label = Median), vjust=1.6, color="white",
+             position = position_dodge(0.9), size = 3.5)
+
+#p <- p + theme(axis.text.x = element_text(angle = 90, hjust = 0.5))
+p <- p + scale_fill_manual(values = c("black", "lightgray"))
+p
